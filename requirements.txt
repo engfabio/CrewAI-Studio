@@ -1,3 +1,24 @@
+# ==================================================
+# INSTRUÇÕES DE INSTALAÇÃO
+# ==================================================
+# 1. Ative o ambiente virtual:
+#    Windows PowerShell:
+#    .\venv\Scripts\Activate.ps1
+#
+#    Prompt de Comando (cmd):
+#    .\venv\Scripts\activate.bat
+#
+# 2. Execute este arquivo com:
+#    pip install -r requirements.txt
+#
+# 3. Para rodar o app:
+#    python -m streamlit run app/app.py
+#
+# Obs: É necessário ter o Microsoft Visual C++ Build Tools instalado
+# para algumas dependências nativas como chroma-hnswlib
+# Download: https://visualstudio.microsoft.com/visual-cpp-build-tools/
+# ==================================================
+
 crewai
 crewai-tools
 langchain

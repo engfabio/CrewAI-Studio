@@ -116,23 +116,20 @@ class MyKnowledgeSource:
         # Validate the knowledge source based on its type
         if self.source_type == "string" and not self.content:
             if show_warning:
-                st.warning(f"Knowledge source {self.name} has no content")
+                st.warning(f"A fonte de conhecimento {self.name} não possui conteúdo")
             return False
         
         if self.source_type != "string" and self.source_type != "docling" and not self.source_path:
             if show_warning:
-                st.warning(f"Knowledge source {self.name} has no source path")
+                st.warning(f"A fonte de conhecimento {self.name} não possui caminho de origem")
             return False
             
-        # For file-based sources, check if the file exists (except for docling URLs)
         if self.source_type != "string" and self.source_type != "docling":
             actual_path = self.find_file(self.source_path)
             if not actual_path:
                 if show_warning:
-                    st.warning(f"File not found: {self.source_path}")
+                    st.warning(f"Arquivo não encontrado: {self.source_path}")
                 return False
-
-            
         return True
 
     def delete(self):
@@ -141,55 +138,47 @@ class MyKnowledgeSource:
 
     def draw(self, key=None):
         source_types = {
-            "string": "Text String",
-            "text_file": "Text File (.txt)",
-            "pdf": "PDF Document",
-            "csv": "CSV File",
-            "excel": "Excel File",
-            "json": "JSON File",
-            "docling": "DocLing (URL or file)"
+            "string": "Texto",
+            "text_file": "Arquivo de Texto (.txt)",
+            "pdf": "Documento PDF",
+            "csv": "Arquivo CSV",
+            "excel": "Arquivo Excel",
+            "json": "Arquivo JSON",
+            "docling": "DocLing (URL ou arquivo)"
         }
         
-        # Create an ID for the upload field that includes both the knowledge source ID and type
-        # This ensures the field is recreated when the type changes
         upload_field_id = f"uploader_{self.id}_{self.source_type}"
         
         if self.edit:
-            # Use a container instead of an expander for the main form
             with st.container():
-                st.subheader(f"Knowledge Source: {self.name}")
+                st.subheader(f"Fonte de Conhecimento: {self.name}")
                 
-                # Name and type are outside the form to trigger immediate updates
-                self.name = st.text_input("Name", value=self.name, key=f"name_{self.id}")
+                self.name = st.text_input("Nome", value=self.name, key=f"name_{self.id}")
                 
                 prev_type = self.source_type
                 self.source_type = st.selectbox(
-                    "Source Type", 
+                    "Tipo de Fonte", 
                     options=list(source_types.keys()),
                     format_func=lambda x: source_types[x],
                     index=list(source_types.keys()).index(self.source_type),
                     key=f"type_{self.id}"
                 )
                 
-                # If type changed, save immediately to trigger rerender
                 if prev_type != self.source_type:
                     db_utils.save_knowledge_source(self)
                     st.rerun()
                 
-                # Create the form for the rest of the fields
                 with st.form(key=f'form_{self.id}' if key is None else key):
                     if self.source_type == "string":
-                        self.content = st.text_area("Content", value=self.content, height=200)
+                        self.content = st.text_area("Conteúdo", value=self.content, height=200)
                     else:
                         self.source_path = st.text_input(
-                            "Source Path", 
+                            "Caminho da Fonte", 
                             value=self.source_path,
-                            help="Enter file path relative to the 'knowledge' directory or a URL for docling"
+                            help="Digite o caminho do arquivo relativo ao diretório 'knowledge' ou uma URL para docling"
                         )
                         
-                        # File uploader for local files
                         if self.source_type != "docling":
-                            # Define file types for the uploader based on source type
                             upload_types = {
                                 "text_file": "txt", 
                                 "pdf": "pdf", 
@@ -201,62 +190,54 @@ class MyKnowledgeSource:
                             file_type = upload_types.get(self.source_type)
                             if file_type:
                                 uploaded_file = st.file_uploader(
-                                    f"Upload {source_types[self.source_type]}", 
+                                    f"Enviar {source_types[self.source_type]}", 
                                     type=file_type,
                                     key=upload_field_id
                                 )
                                 
                                 if uploaded_file is not None:
-                                    # Create knowledge directory if it doesn't exist
                                     os.makedirs("knowledge", exist_ok=True)
-                                    
-                                    # Save the uploaded file to the knowledge directory
                                     file_name = uploaded_file.name                                   
                                     file_path = os.path.join("knowledge", file_name)
                                     
                                     with open(file_path, "wb") as f:
                                         f.write(uploaded_file.getbuffer())
                                     
-                                    # Set the source path to just the filename with knowledge prefix
                                     self.source_path = file_name
                     
-                    # Advanced settings
-                    st.subheader("Advanced Settings")
+                    st.subheader("Configurações Avançadas")
                     
-                    # Chunk configuration
                     col1, col2 = st.columns(2)
                     with col1:
                         self.chunk_size = st.number_input(
-                            "Chunk Size", 
+                            "Tamanho do Chunk", 
                             value=self.chunk_size,
                             min_value=100,
                             max_value=8000,
-                            help="Maximum size of each chunk (default: 4000)"
+                            help="Tamanho máximo de cada chunk (padrão: 4000)"
                         )
                     with col2:
                         self.chunk_overlap = st.number_input(
-                            "Chunk Overlap", 
+                            "Sobreposição de Chunks", 
                             value=self.chunk_overlap,
                             min_value=0,
                             max_value=1000,
-                            help="Overlap between chunks (default: 200)"
+                            help="Sobreposição entre chunks (padrão: 200)"
                         )
                     
-                    # Metadata section
-                    st.subheader("Metadata (optional)")
+                    st.subheader("Metadados (opcional)")
                     col1, col2 = st.columns([3, 1])
                     with col1:
-                        metadata_key = st.text_input("Key", key=f"metadata_key_{self.id}")
-                        metadata_value = st.text_input("Value", key=f"metadata_value_{self.id}")
+                        metadata_key = st.text_input("Chave", key=f"metadata_key_{self.id}")
+                        metadata_value = st.text_input("Valor", key=f"metadata_value_{self.id}")
                     with col2:
-                        add_metadata = st.form_submit_button("Add Metadata")
+                        add_metadata = st.form_submit_button("Adicionar Metadado")
                         if add_metadata and metadata_key:
                             self.metadata[metadata_key] = metadata_value
                             st.rerun()
                     
-                    # Display current metadata
                     if self.metadata:
-                        st.write("Current Metadata:")
+                        st.write("Metadados Atuais:")
                         for key, value in dict(self.metadata).items():
                             col1, col2, col3 = st.columns([3, 3, 1])
                             with col1:
@@ -264,13 +245,12 @@ class MyKnowledgeSource:
                             with col2:
                                 st.text(value)
                             with col3:
-                                remove_key = st.form_submit_button(f"Remove {key[:6]}...")
+                                remove_key = st.form_submit_button(f"Remover {key[:6]}...")
                                 if remove_key:
                                     self.metadata.pop(key)
                                     st.rerun()
                     
-                    # Save button for the entire form
-                    submitted = st.form_submit_button("Save Knowledge Source")
+                    submitted = st.form_submit_button("Salvar Fonte de Conhecimento")
                     if submitted:
                         db_utils.save_knowledge_source(self)
                         self.set_editable(False)
@@ -278,28 +258,28 @@ class MyKnowledgeSource:
             fix_columns_width()
             source_name = f"{self.name}" if self.is_valid() else f"❗ {self.name}"
             with st.expander(source_name, expanded=False):
-                st.markdown(f"**Name:** {self.name}")
-                st.markdown(f"**Type:** {source_types[self.source_type]}")
+                st.markdown(f"**Nome:** {self.name}")
+                st.markdown(f"**Tipo:** {source_types[self.source_type]}")
                 
                 if self.source_type == "string":
                     preview = self.content[:100] + "..." if len(self.content) > 100 else self.content
-                    st.markdown(f"**Content Preview:** {preview}")
+                    st.markdown(f"**Prévia do Conteúdo:** {preview}")
                 else:
-                    st.markdown(f"**Source Path:** {self.source_path}")
+                    st.markdown(f"**Caminho da Fonte:** {self.source_path}")
                 
-                st.markdown(f"**Chunk Size:** {self.chunk_size}")
-                st.markdown(f"**Chunk Overlap:** {self.chunk_overlap}")
+                st.markdown(f"**Tamanho do Chunk:** {self.chunk_size}")
+                st.markdown(f"**Sobreposição de Chunks:** {self.chunk_overlap}")
                 
                 if self.metadata:
-                    st.markdown("**Metadata:**")
+                    st.markdown("**Metadados:**")
                     for key, value in self.metadata.items():
                         st.markdown(f"- {key}: {value}")
                 
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.button("Edit", on_click=self.set_editable, args=(True,), key=rnd_id())
+                    st.button("Editar", on_click=self.set_editable, args=(True,), key=rnd_id())
                 with col2:
-                    st.button("Delete", on_click=self.delete, key=rnd_id())
+                    st.button("Excluir", on_click=self.delete, key=rnd_id())
                 
                 self.is_valid(show_warning=True)
 

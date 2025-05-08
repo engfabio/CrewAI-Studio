@@ -6,32 +6,31 @@ from utils import rnd_id, format_result, generate_printable_view
 
 class PageResults:
     def __init__(self):
-        self.name = "Results"
+        self.name = "Resultados"
 
     def draw(self):
         st.subheader(self.name)
 
-        # Load results if not present in session state
         if 'results' not in ss:
             ss.results = load_results()
 
-        # Filters
+        # Filtros
         col1, col2 = st.columns(2)
         with col1:
             crew_filter = st.multiselect(
-                "Filter by Crew",
+                "Filtrar por Equipe",
                 options=list(set(r.crew_name for r in ss.results)),
                 default=[],
                 key="crew_filter"
             )
         with col2:
             date_filter = st.date_input(
-                "Filter by Date",
+                "Filtrar por Data",
                 value=None,
                 key="date_filter"
             )
 
-        # Apply filters
+        # Aplicar filtros
         filtered_results = ss.results
         if crew_filter:
             filtered_results = [r for r in filtered_results if r.crew_name in crew_filter]
@@ -39,29 +38,26 @@ class PageResults:
             filter_date = datetime.combine(date_filter, datetime.min.time())
             filtered_results = [r for r in filtered_results if datetime.fromisoformat(r.created_at).date() == date_filter]
 
-        # Sort results by creation time (newest first)
+        # Ordenar resultados por data de criação (mais recentes primeiro)
         filtered_results = sorted(
             filtered_results,
             key=lambda x: datetime.fromisoformat(x.created_at),
             reverse=True
         )
 
-        # Display results
+        # Exibir resultados
         for result in filtered_results:
-            # Format inputs for display in expander title
+            # Formatar entradas para exibição no título do expansor
             input_summary = ""
             input_items = list(result.inputs.items())
             
-            # Handle different numbers of input fields
             if len(input_items) == 0:
                 input_summary = ""
             elif len(input_items) == 1:
-                # For just one input, show more of its value
                 key, value = input_items[0]
                 input_summary = f" | {key}: {value[:30]}" + ("..." if len(value) > 30 else "")
             else:
-                # For multiple inputs, show brief summaries
-                max_chars = max(40 // len(input_items), 10)  # Adjust based on number of inputs
+                max_chars = max(40 // len(input_items), 10)
                 input_parts = []
                 
                 for key, value in input_items:
@@ -72,20 +68,19 @@ class PageResults:
                 
                 input_summary = " | " + " | ".join(input_parts)
             
-            # Create the expander with enhanced title
-            timestamp = datetime.fromisoformat(result.created_at).strftime('%Y-%m-%d %H:%M:%S')
+            timestamp = datetime.fromisoformat(result.created_at).strftime('%d/%m/%Y %H:%M:%S')
             expander_title = f"{result.crew_name} - {timestamp}{input_summary}"
             
             with st.expander(expander_title, expanded=False):
-                st.markdown("#### Inputs")
+                st.markdown("#### Entradas")
                 for key, value in result.inputs.items():
                     st.text_input(key, value, disabled=True, key=rnd_id())
 
-                st.markdown("#### Result")
+                st.markdown("#### Resultado")
                 formatted_result = format_result(result.result)
 
-                # Show both rendered and raw versions using tabs
-                tab1, tab2 = st.tabs(["Rendered", "Raw"])
+                # Mostrar versões formatada e bruta usando abas
+                tab1, tab2 = st.tabs(["Formatado", "Bruto"])
                 with tab1:
                     st.markdown(formatted_result)
                 with tab2:
@@ -93,12 +88,11 @@ class PageResults:
 
                 col1, col2 = st.columns([1, 1])
                 with col1:
-                    if st.button("Delete", key=f"delete_{result.id}"):
+                    if st.button("Excluir", key=f"delete_{result.id}"):
                         delete_result(result.id)
                         ss.results.remove(result)
                         st.rerun()
                 with col2:
-                    # Create a button to open the printable view in a new tab
                     html_content = generate_printable_view(
                         result.crew_name,
                         result.result,
@@ -106,7 +100,7 @@ class PageResults:
                         formatted_result,
                         result.created_at
                     )
-                    if st.button("Open Printable View", key=f"print_{result.id}"):
+                    if st.button("Abrir Visualização para Impressão", key=f"print_{result.id}"):
                         js = f"""
                         <script>
                             var printWindow = window.open('', '_blank');

@@ -5,12 +5,12 @@ import db_utils
 
 class PageCrews:
     def __init__(self):
-        self.name = "Crews"
+        self.name = "Equipes"
 
     def create_crew(self):
         crew = MyCrew()
         if 'crews' not in ss:
-            ss.crews = [MyCrew]
+            ss.crews = [] # Corrigido: inicializar como lista vazia
         ss.crews.append(crew)
         crew.edit = True
         db_utils.save_crew(crew)  # Save crew to database
@@ -27,5 +27,5 @@ class PageCrews:
                 if crew.edit:
                     editing = True
             if len(ss.crews) == 0:
-                st.write("No crews defined yet.")
-            st.button('Create crew', on_click=self.create_crew, disabled=editing)
+                st.write("Nenhuma equipe definida ainda.")
+            st.button('Criar equipe', on_click=self.create_crew, disabled=editing)
