@@ -16,7 +16,7 @@ from datetime import datetime
 
 class PageExportCrew:
     def __init__(self):
-        self.name = "Import/export"
+        self.name = "Importar/Exportar"
 
     def extract_placeholders(self, text):
         return re.findall(r'\{(.*?)\}', text)
@@ -111,7 +111,7 @@ def create_lmstudio_llm(model, temperature):
     if api_base:
         return ChatOpenAI(openai_api_key='lm-studio', openai_api_base=api_base, temperature=temperature)
     else:
-        raise ValueError("LM Studio API base not set in .env file")
+        raise ValueError("URL base do LM Studio não definida no arquivo .env")
 
 def create_openai_llm(model, temperature):
     safe_pop_env_var('OPENAI_API_KEY')
@@ -122,21 +122,21 @@ def create_openai_llm(model, temperature):
     if api_key:
         return ChatOpenAI(openai_api_key=api_key, openai_api_base=api_base, model_name=model, temperature=temperature)
     else:
-        raise ValueError("OpenAI API key not set in .env file")
+        raise ValueError("Chave API da OpenAI não definida no arquivo .env")
 
 def create_groq_llm(model, temperature):
     api_key = os.getenv('GROQ_API_KEY')
     if api_key:
         return ChatGroq(groq_api_key=api_key, model_name=model, temperature=temperature)
     else:
-        raise ValueError("Groq API key not set in .env file")
+        raise ValueError("Chave API da Groq não definida no arquivo .env")
 
 def create_anthropic_llm(model, temperature):
     api_key = os.getenv('ANTHROPIC_API_KEY')
     if api_key:
         return ChatAnthropic(anthropic_api_key=api_key, model_name=model, temperature=temperature)
     else:
-        raise ValueError("Anthropic API key not set in .env file")
+        raise ValueError("Chave API da Anthropic não definida no arquivo .env")
 
 def safe_pop_env_var(key):
     try:
@@ -200,16 +200,16 @@ def main():
     placeholders = {{
         {placeholders_dict}
     }}
-    with st.spinner("Running crew..."):
+    with st.spinner("Executando equipe..."):
         try:
             result = crew.kickoff(inputs=placeholders)
-            with st.expander("Final output", expanded=True):
+            with st.expander("Saída final", expanded=True):
                 if hasattr(result, 'raw'):
                     st.write(result.raw)                
-            with st.expander("Full output", expanded=False):
+            with st.expander("Saída completa", expanded=False):
                 st.write(result)
         except Exception as e:
-            st.error(f"An error occurred: {{str(e)}}")
+            st.error(f"Ocorreu um erro: {{str(e)}}")
 
 if __name__ == '__main__':
     main()
@@ -237,16 +237,16 @@ if __name__ == '__main__':
         install_sh_content = """
 #!/bin/bash
 
-# Create a virtual environment
-python -m venv venv || { echo "Failed to create venv"; exit 1; }
+# Criar ambiente virtual
+python -m venv venv || { echo "Falha ao criar venv"; exit 1; }
 
-# Activate the virtual environment
-source venv/bin/activate || { echo "Failed to activate venv"; exit 1; }
+# Ativar ambiente virtual
+source venv/bin/activate || { echo "Falha ao ativar venv"; exit 1; }
 
-# Install requirements
-pip install -r requirements.txt || { echo "Failed to install requirements"; exit 1; }
+# Instalar requisitos
+pip install -r requirements.txt || { echo "Falha ao instalar requisitos"; exit 1; }
 
-echo "Installation completed successfully."
+echo "Instalação concluída com sucesso."
 """
         with open(os.path.join(output_dir, 'install.sh'), 'w') as f:
             f.write(install_sh_content)
@@ -255,11 +255,11 @@ echo "Installation completed successfully."
         run_sh_content = """
 #!/bin/bash
 
-# Get the directory where the script is located
+# Obter o diretório onde o script está localizado
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
-# Activate the virtual environment
-source "$SCRIPT_DIR/venv/bin/activate" || { echo "Failed to activate venv"; exit 1; }
+# Ativar o ambiente virtual
+source "$SCRIPT_DIR/venv/bin/activate" || { echo "Falha ao ativar venv"; exit 1; }
 
 cd "$SCRIPT_DIR"
 
@@ -272,25 +272,25 @@ streamlit run app.py --server.headless True
         install_bat_content = """
 @echo off
 
-:: Create a virtual environment
+:: Criar ambiente virtual
 python -m venv venv || (
-    echo Failed to create venv
+    echo Falha ao criar venv
     exit /b 1
 )
 
-:: Activate the virtual environment
+:: Ativar ambiente virtual
 call venv\\Scripts\\activate || (
-    echo Failed to activate venv
+    echo Falha ao ativar venv
     exit /b 1
 )
 
-:: Install requirements
+:: Instalar requisitos
 pip install -r requirements.txt || (
-    echo Failed to install requirements
+    echo Falha ao instalar requisitos
     exit /b 1
 )
 
-echo Installation completed successfully.
+echo Instalação concluída com sucesso.
 """
         with open(os.path.join(output_dir, 'install.bat'), 'w') as f:
             f.write(install_bat_content)
@@ -298,13 +298,13 @@ echo Installation completed successfully.
         run_bat_content = """
 @echo off
 
-:: Activate the virtual environment
+:: Ativar o ambiente virtual
 call venv\\Scripts\\activate || (
-    echo Failed to activate venv
+    echo Falha ao ativar venv
     exit /b 1
 )
 
-:: Run the Streamlit app
+:: Executar o aplicativo Streamlit
 streamlit run app.py --server.headless true
 """
         with open(os.path.join(output_dir, 'run.bat'), 'w') as f:
@@ -469,56 +469,56 @@ streamlit run app.py --server.headless true
     def draw(self):
         st.subheader(self.name)
 
-        # Full JSON Export Button
-        if st.button("Export everything to json"):
+        # Botão de exportação JSON completa
+        if st.button("Exportar tudo para JSON"):
             current_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
-            file_path = f"all_crews_{current_datetime}.json"
+            file_path = f"todas_equipes_{current_datetime}.json"
             db_utils.export_to_json(file_path)
             with open(file_path, "rb") as fp:
                 st.download_button(
-                    label="Download All Crews JSON",
+                    label="Baixar JSON com Todas as Equipes",
                     data=fp,
                     file_name=file_path,
                     mime="application/json"
                 )
 
-        # JSON Import Button
-        uploaded_file = st.file_uploader("Import JSON file", type="json")
+        # Botão de importação JSON
+        uploaded_file = st.file_uploader("Importar arquivo JSON", type="json")
         if uploaded_file is not None:
             json_data = json.load(uploaded_file)
             
-            if isinstance(json_data, list):  # Full database export
+            if isinstance(json_data, list):  # Exportação completa do banco de dados
                 with open("uploaded_file.json", "w") as f:
                     json.dump(json_data, f)
                 db_utils.import_from_json("uploaded_file.json")
-                st.success("Full database JSON file imported successfully!")
-            elif isinstance(json_data, dict) and 'id' in json_data:  # Single crew export
+                st.success("Arquivo JSON do banco de dados importado com sucesso!")
+            elif isinstance(json_data, dict) and 'id' in json_data:  # Exportação de uma única equipe
                 imported_crew = self.import_crew_from_json(json_data)
-                st.success(f"Crew '{imported_crew.name}' imported successfully!")
+                st.success(f"Equipe '{imported_crew.name}' importada com sucesso!")
             else:
-                st.error("Invalid JSON format. Please upload a valid crew or full database export file.")
+                st.error("Formato JSON inválido. Por favor, envie um arquivo válido de exportação de equipe ou do banco de dados completo.")
 
         if 'crews' not in ss or len(ss.crews) == 0:
-            st.write("No crews defined yet.")
+            st.write("Nenhuma equipe definida ainda.")
         else:
             crew_names = [crew.name for crew in ss.crews]
-            selected_crew_name = st.selectbox("Select crew to export", crew_names)
+            selected_crew_name = st.selectbox("Selecione a equipe para exportar", crew_names)
             
-            if st.button("Export singlepage app"):
+            if st.button("Exportar aplicativo único"):
                 zip_path = self.create_export(selected_crew_name)
                 with open(zip_path, "rb") as fp:
                     st.download_button(
-                        label="Download Exported App",
+                        label="Baixar Aplicativo Exportado",
                         data=fp,
                         file_name=f"{selected_crew_name}_app.zip",
                         mime="application/zip"
                     )        
-            if st.button("Export crew to JSON"):
+            if st.button("Exportar equipe para JSON"):
                 selected_crew = next((crew for crew in ss.crews if crew.name == selected_crew_name), None)
                 if selected_crew:
                     crew_json = self.export_crew_to_json(selected_crew)
                     st.download_button(
-                        label="Download Crew JSON",
+                        label="Baixar JSON da Equipe",
                         data=crew_json,
                         file_name=f"{selected_crew_name}_export.json",
                         mime="application/json"

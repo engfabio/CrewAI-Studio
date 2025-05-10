@@ -15,14 +15,14 @@ import os
 
 def pages():
     return {
-        'Crews': PageCrews(),
-        'Tools': PageTools(),
-        'Agents': PageAgents(),
-        'Tasks': PageTasks(),
-        'Knowledge': PageKnowledge(),  # Add this line
-        'Kickoff!': PageCrewRun(),
-        'Results': PageResults(),
-        'Import/export': PageExportCrew()
+        'Equipes': PageCrews(),
+        'Ferramentas': PageTools(),
+        'Agentes': PageAgents(),
+        'Tarefas': PageTasks(),
+        'Conhecimento': PageKnowledge(),
+        'Executar!': PageCrewRun(),
+        'Resultados': PageResults(),
+        'Importar/Exportar': PageExportCrew()
     }
 
 def load_data():
@@ -33,21 +33,29 @@ def load_data():
     ss.enabled_tools = db_utils.load_tools_state()
     ss.knowledge_sources = db_utils.load_knowledge_sources()
 
-
 def draw_sidebar():
     with st.sidebar:
         st.image("img/crewai_logo.png")
 
         if 'page' not in ss:
-            ss.page = 'Crews'
+            ss.page = 'Equipes'
         
-        selected_page = st.radio('Page', list(pages().keys()), index=list(pages().keys()).index(ss.page),label_visibility="collapsed")
+        selected_page = st.radio('Navegar', list(pages().keys()), index=list(pages().keys()).index(ss.page), label_visibility="collapsed")
         if selected_page != ss.page:
             ss.page = selected_page
             st.rerun()
             
 def main():
-    st.set_page_config(page_title="CrewAI Studio", page_icon="img/favicon.ico", layout="wide")
+    st.set_page_config(
+        page_title="CrewAI Studio", 
+        page_icon="img/favicon.ico", 
+        layout="wide",
+        menu_items={
+            'Get Help': 'https://github.com/joaomdmoura/crewAI',
+            'Report a bug': "https://github.com/joaomdmoura/crewAI/issues",
+            'About': "# CrewAI Studio\nUma interface gráfica para criar e executar equipes de IA usando CrewAI."
+        }
+    )
     load_dotenv()
     load_secrets_fron_env()
     if (str(os.getenv('AGENTOPS_ENABLED')).lower() in ['true', '1']) and not ss.get('agentops_failed', False):
@@ -56,12 +64,12 @@ def main():
             agentops.init(api_key=os.getenv('AGENTOPS_API_KEY'),auto_start_session=False)    
         except ModuleNotFoundError as e:
             ss.agentops_failed = True
-            print(f"Error initializing AgentOps: {str(e)}")            
+            print(f"Erro ao inicializar AgentOps: {str(e)}")            
         
     db_utils.initialize_db()
     load_data()
     draw_sidebar()
-    PageCrewRun.maintain_session_state() #this will persist the session state for the crew run page so crew run can be run in a separate thread
+    PageCrewRun.maintain_session_state()
     pages()[ss.page].draw()
     
 if __name__ == '__main__':

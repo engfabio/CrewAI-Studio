@@ -14,7 +14,7 @@ from utils import format_result, generate_printable_view, rnd_id
 
 class PageCrewRun:
     def __init__(self):
-        self.name = "Kickoff!"
+        self.name = "Executar!"
         self.maintain_session_state()
         if 'results' not in ss:
             ss.results = load_results()
@@ -77,7 +77,7 @@ class PageCrewRun:
     def draw_placeholders(self, crew):
         placeholders = self.get_placeholders_from_crew(crew)
         if placeholders:
-            st.write('Placeholders to fill in:')
+            st.write('Preencha os campos abaixo:')
             for placeholder in placeholders:
                 placeholder_key = f'placeholder_{placeholder}'
                 ss.placeholders[placeholder_key] = st.text_input(
@@ -89,7 +89,7 @@ class PageCrewRun:
 
     def draw_crews(self):
         if 'crews' not in ss or not ss.crews:
-            st.write("No crews defined yet.")
+            st.write("Nenhuma equipe definida ainda.")
             ss.selected_crew_name = None  # Reset selected crew name if there are no crews
             return
 
@@ -98,7 +98,7 @@ class PageCrewRun:
             ss.selected_crew_name = None
 
         selected_crew_name = st.selectbox(
-            label="Select crew to run",
+            label="Selecione a equipe para executar",
             options=[crew.name for crew in ss.crews],
             index=0 if ss.selected_crew_name is None else [crew.name for crew in ss.crews].index(ss.selected_crew_name) if ss.selected_crew_name in [crew.name for crew in ss.crews] else 0,
             disabled=ss.running
@@ -115,11 +115,11 @@ class PageCrewRun:
             self.draw_placeholders(selected_crew)
             
             if not selected_crew.is_valid(show_warning=True):
-                st.error("Selected crew is not valid. Please fix the issues.")
+                st.error("A equipe selecionada não é válida. Por favor, corrija os problemas.")
             self.control_buttons(selected_crew)
 
     def control_buttons(self, selected_crew):
-        if st.button('Run crew!', disabled=not selected_crew.is_valid() or ss.running):
+        if st.button('Executar equipe!', disabled=not selected_crew.is_valid() or ss.running):
             inputs = {key.split('_')[1]: value for key, value in ss.placeholders.items()}
             ss.result = None
             
@@ -132,7 +132,7 @@ class PageCrewRun:
 
             ss.console_capture = ConsoleCapture()
             ss.console_capture.start()
-            ss.console_output = []  # Reset výstupu
+            ss.console_output = []  # Resetar saída
 
             ss.running = True
             ss.crew_thread = threading.Thread(
@@ -148,7 +148,7 @@ class PageCrewRun:
             ss.running = True            
             st.rerun()
 
-        if st.button('Stop crew!', disabled=not ss.running):
+        if st.button('Parar execução!', disabled=not ss.running):
             self.force_stop_thread(ss.crew_thread)
             if hasattr(ss, 'console_capture'):
                 ss.console_capture.stop()
@@ -156,7 +156,7 @@ class PageCrewRun:
             ss.running = False
             ss.crew_thread = None
             ss.result = None
-            st.success("Crew stopped successfully.")
+            st.success("Execução interrompida com sucesso.")
             st.rerun()
 
     def serialize_result(self, result):
@@ -182,16 +182,16 @@ class PageCrewRun:
         return str(result)
 
     def display_result(self):
-        if ss.running and ss.page != "Kickoff!":
-            ss.page = "Kickoff!"
+        if ss.running and ss.page != "Executar!":
+            ss.page = "Executar!"
             st.rerun()
         console_container = st.empty()
         
         with console_container.container():
-            with st.expander("Console Output", expanded=False):
+            with st.expander("Saída do Console", expanded=False):
                 col1, col2 = st.columns([6,1])
                 with col2:
-                    if st.button("Clear console"):
+                    if st.button("Limpar console"):
                         ss.console_output = []
                         st.rerun()
 
@@ -245,8 +245,8 @@ class PageCrewRun:
 
                 # Display the result
                 formatted_result = format_result(ss.result)
-                st.expander("Final output", expanded=True).write(formatted_result)
-                st.expander("Full output", expanded=False).write(ss.result)
+                st.expander("Saída final", expanded=True).write(formatted_result)
+                st.expander("Saída completa", expanded=False).write(ss.result)
 
                 # Add print button
                 # FIXED: Also use the relevant placeholders for the printable view
@@ -265,7 +265,7 @@ class PageCrewRun:
                     relevant_inputs,
                     formatted_result
                 )
-                if st.button("Open Printable View"):
+                if st.button("Abrir Visualização para Impressão"):
                     js = f"""
                     <script>
                         var printWindow = window.open('', '_blank');
@@ -278,7 +278,7 @@ class PageCrewRun:
             else:
                 st.error(ss.result)
         elif ss.running and ss.crew_thread is not None:
-            with st.spinner("Running crew..."):
+            with st.spinner("Executando equipe..."):
                 if hasattr(ss, 'console_capture'):
                     new_output = ss.console_capture.get_output()
                     if new_output:
@@ -302,9 +302,9 @@ class PageCrewRun:
             if tid:
                 res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(SystemExit))
                 if res == 0:
-                    st.error("Nonexistent thread id")
+                    st.error("ID de thread inexistente")
                 else:
-                    st.success("Thread stopped successfully.")
+                    st.success("Thread interrompida com sucesso.")
 
     def draw(self):
         st.subheader(self.name)

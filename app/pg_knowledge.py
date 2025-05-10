@@ -8,7 +8,7 @@ from pathlib import Path
 
 class PageKnowledge:
     def __init__(self):
-        self.name = "Knowledge"
+        self.name = "Conhecimento"
 
     def create_knowledge_source(self):
         knowledge_source = MyKnowledgeSource()
@@ -29,27 +29,31 @@ class PageKnowledge:
         knowledge_dir = crewai_dir / "knowledge"
         if knowledge_dir.exists():
             shutil.rmtree(knowledge_dir)
-            st.success("Knowledge stores cleared successfully!")
+            st.success("Armazéns de conhecimento limpos com sucesso!")
         else:
-            st.info("No knowledge stores found to clear.")
+            st.info("Nenhum armazém de conhecimento encontrado para limpar.")
 
     def draw(self):
         st.subheader(self.name)
         
-        # Instruction
         st.markdown("""
-        Knowledge sources are used to provide external information to agents.
-        You can create different types of knowledge sources and assign them to agents or crews.
+        ### Como usar fontes de conhecimento
+
+        As fontes de conhecimento permitem que você forneça informações externas aos seus agentes e equipes.
+        
+        Você pode:
+        - Criar diferentes tipos de fontes (texto, arquivos PDF, CSV, etc.)
+        - Atribuir fontes a agentes específicos
+        - Atribuir fontes a equipes inteiras
+        - Usar as fontes para melhorar o contexto e precisão dos agentes
         """)
         
-        # Create knowledge directory if it doesn't exist
         os.makedirs("knowledge", exist_ok=True)
         
-        # Clear knowledge button
-        st.button("Clear All Knowledge Stores", on_click=self.clear_knowledge, 
-                  help="This will clear all knowledge stores in CrewAI, removing cached embeddings")
+        st.button("Limpar Cache de Conhecimento", 
+                 on_click=self.clear_knowledge, 
+                 help="Limpa todos os embeddings e caches de conhecimento no CrewAI")
         
-        # Display existing knowledge sources
         editing = False
         if 'knowledge_sources' not in ss:
             ss.knowledge_sources = db_utils.load_knowledge_sources()
@@ -60,6 +64,9 @@ class PageKnowledge:
                 editing = True
                 
         if len(ss.knowledge_sources) == 0:
-            st.write("No knowledge sources defined yet.")
-            
-        st.button('Create Knowledge Source', on_click=self.create_knowledge_source, disabled=editing)
+            st.write("Nenhuma fonte de conhecimento definida ainda.")
+            if st.button('Nova Fonte de Conhecimento', on_click=self.create_knowledge_source, disabled=editing):
+                st.success("Nova fonte de conhecimento criada com sucesso!")
+        else:
+            if st.button('Nova Fonte de Conhecimento', on_click=self.create_knowledge_source, disabled=editing):
+                st.success("Nova fonte de conhecimento criada com sucesso!")

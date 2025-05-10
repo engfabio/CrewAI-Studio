@@ -1,0 +1,20 @@
+Antes de instalar as dependências, ative o ambiente virtual com o comando:
+
+Windows PowerShell:
+.\venv\Scripts\Activate.ps1
+
+Prompt de Comando (cmd):
+.\venv\Scripts\activate.bat
+
+Após ativar o ambiente virtual, instale as dependências com:
+
+pip install -r requirements.txt
+
+Isso garante que os pacotes sejam instalados dentro do ambiente virtual e não globalmente.
+
+Para rodar o app Streamlit, use:
+
+python -m streamlit run app/app.py
+
+Observação: Para compilar algumas dependências nativas, como chroma-hnswlib, é necessário ter o Microsoft Visual C++ Build Tools instalado:
+https://visualstudio.microsoft.com/visual-cpp-build-tools/
